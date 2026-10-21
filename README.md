@@ -1,5 +1,11 @@
 # SK · KT · LG 통합 상담
 
+- 공개 사이트: https://skktlg-insta.vercel.app
+- GitHub: https://github.com/dad041566-hue/skktlg-insta
+- Vercel 프로젝트: skktlg-insta (main 브랜치 연결)
+
+main에 push하면 Vercel에서 `node build.cjs`를 실행하고 dist/를 자동 배포합니다.
+
 처음 승인한 화이트·레드 모바일 샘플 구성: 제품 모음 메인 이미지 → 프로모션 혜택 → 2열 상품 카드 → 하단 고정 상담 버튼.
 
 ## 실행
