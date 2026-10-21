@@ -1,0 +1,6 @@
+.git/
+dist/
+assets/site-*.png
+assets/restaurant.png
+server.cjs
+README.md
