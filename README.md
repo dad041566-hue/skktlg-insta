@@ -24,8 +24,14 @@ main에 push하면 Vercel에서 `node build.cjs`를 실행하고 dist/를 자동
 
 ## 배포 파일
 
-index.html, style.css, app.js, config.js, assets/hero.png, assets/PretendardVariable.woff2, assets/FONT-LICENSE.txt.
+index.html, style.css, app.js, config.js, assets/hero.png, assets/package-promotion.png, assets/PretendardVariable.woff2, assets/FONT-LICENSE.txt.
 
 assets의 restaurant.png와 site-*.png는 과거 시안/검토용이며 현재 사이트에서 사용하지 않습니다.
 
 hero.png는 내장 image_gen으로 제작한 무브랜드 제품 연출 이미지입니다. 카드 이미지는 같은 원본을 SVG viewBox로 표시합니다. Pretendard 라이선스는 assets/FONT-LICENSE.txt에 있습니다.
+
+## 패키지 전용 이미지
+
+assets/package-promotion.png는 내장 image_gen으로 새로 제작했습니다. 기존 선물상자 확대 이미지를 대체하여 패키지 전체 구성을 보여줍니다. 설명·금액·조건은 이미지에 넣지 않고 HTML로 표시합니다.
+
+제작 프롬프트: 밝은 흰색·연분홍 스튜디오, 낮은 흰색 단 위에 TV와 공유기·스마트 포스·음식 메뉴가 보이는 테이블오더·흰 정수기·돔 CCTV를 모아 배치하고 빨간 리본 선물상자를 보조 요소로 사용한 사실적인 가로 3:2 제품 광고 사진. 제품 전체를 선명하게, 로고·글자·가격·사람·키오스크 없이 제작.
