@@ -6,3 +6,8 @@ node_modules/
 assets/site-*.png
 assets/restaurant.png
 *.log
+private/
+.local-data/
+output/
+
+.env*

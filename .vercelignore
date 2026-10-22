@@ -4,3 +4,8 @@ assets/site-*.png
 assets/restaurant.png
 server.cjs
 README.md
+output/
+private/
+.local-data/
+tests/
+.env*

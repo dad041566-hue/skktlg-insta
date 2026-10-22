@@ -3,5 +3,12 @@
   "framework": null,
   "buildCommand": "node build.cjs",
   "outputDirectory": "dist",
-  "installCommand": ""
+  "installCommand": "npm ci",
+  "functions": {"api/*.js": {"maxDuration": 60}},
+  "crons": [{"path":"/api/cleanup","schedule":"0 19 * * *"}],
+  "headers": [{"source":"/(.*)","headers":[
+    {"key":"X-Content-Type-Options","value":"nosniff"},
+    {"key":"Referrer-Policy","value":"strict-origin-when-cross-origin"},
+    {"key":"X-Frame-Options","value":"DENY"}
+  ]}]
 }

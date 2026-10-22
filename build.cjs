@@ -1,7 +1,8 @@
 const fs = require('node:fs');
 const path = require('node:path');
 const files = [
-  'index.html', 'style.css', 'app.js', 'config.js',
+  'index.html', 'style.css', 'survey.css', 'app.js', 'config.js', 'survey-model.js',
+  'admin.html', 'admin.css', 'admin.js',
   'assets/hero.png', 'assets/package-promotion.png', 'assets/PretendardVariable.woff2', 'assets/FONT-LICENSE.txt',
 ];
 for (const file of files) {
