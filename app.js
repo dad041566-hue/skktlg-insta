@@ -41,12 +41,7 @@ function inputField(name,label,placeholder,{optional=false,numeric=false}={}){
 }
 function heading(title,description){return `<h2 id="consult-heading" tabindex="-1">${title}</h2><p class="survey-description">${description}</p>`;}
 function summary(){
-  const d=M.normalize(answers),details=[];
-  if(d.details.carrier)details.push(`현재 통신사 ${d.details.carrier}`);
-  if(d.details.tables)details.push(`테이블오더 ${d.details.tables}대`);
-  if(d.details.rooms)details.push(`TV ${d.details.rooms}대`);
-  if(d.details.cameras)details.push(`CCTV ${d.details.cameras}`);
-  if(d.details.business)details.push(d.details.business);
+  const d=M.normalize(answers),details=M.detailEntries(d).map(entry=>`${entry.label} ${entry.value}`);
   const row=(label,value,index)=>`<div><dt>${label}</dt><dd>${escapeHTML(value)}</dd><button type="button" data-edit="${index}" aria-label="${label} 수정">수정</button></div>`;
   return `<div class="answer-summary"><p>선택하신 상담 내용</p><dl>${row('이용 장소',d.place,0)}${row('필요 상품',d.products.join(' · '),1)}${row('설치 상황',[d.situation,...details].join(' · '),2)}${row('지역 · 시기',`${d.region} ${d.district} · ${d.timing}`,3)}</dl></div>`;
 }
@@ -58,20 +53,17 @@ function render(){
   else if(step===0){content.innerHTML=heading('어디에서 이용하시나요?','이용하실 곳에 맞춰 필요한 상품을 안내해 드려요.')+choices('place',M.places,{descriptions:['우리 가족을 위한 인터넷·TV와 생활 상품','신규 오픈부터 기존 매장 교체까지','여러 객실의 TV와 인터넷을 한 번에']})+`<p class="survey-tip">필요한 상품과 설치 조건만 알려주세요.<br>여러 상품도 한 번에 상담받을 수 있어요.</p>`;}
   else if(step===1){content.innerHTML=heading('어떤 상품이 필요하세요?','여러 개를 함께 선택하셔도 괜찮아요.')+choices('products',[...M.products,'아직 잘 모르겠어요'],{multiple:true,compact:true});}
   else if(step===2){
-    let detail='';
-    if(answers.products.some(p=>['인터넷·TV','모텔·호텔 다량 TV'].includes(p)))detail+=`<fieldset><legend>현재 이용 중인 통신사</legend>${choices('details.carrier',M.carriers,{compact:true})}</fieldset>`;
-    if(answers.products.includes('테이블오더'))detail+=inputField('details.tables','필요한 테이블오더 수량','예: 13',{optional:true,numeric:true});
-    if(answers.products.includes('모텔·호텔 다량 TV'))detail+=inputField('details.rooms','필요한 TV 수량','예: 30',{optional:true,numeric:true});
-    if(answers.products.includes('CCTV'))detail+=`<fieldset><legend>필요한 CCTV 수량 <em>선택</em></legend>${choices('details.cameras',['1~2대','3~4대','5대 이상','상담 후 결정'],{compact:true})}</fieldset>`;
-    if(answers.products.some(p=>['포스','키오스크'].includes(p)))detail+=inputField('details.business','매장 업종','예: 음식점, 카페, 소매점',{optional:true});
-    content.innerHTML=heading('어떤 상황이신가요?','현재 상황을 알려주시면 상담이 더 정확해져요.')+choices('situation',M.situations,{compact:true})+`<div class="detail-fields">${detail}</div>`+`<p class="survey-tip">수량이나 업종이 아직 정해지지 않았다면<br>비워두고 다음으로 넘어가세요.</p>`;
+    const fields=M.fieldsFor(answers.products),detail=fields.map(field=>field.type==='choice'
+      ?`<fieldset><legend>${field.label}${field.required?'':' <em>선택</em>'}</legend>${choices('details.'+field.key,field.options,{compact:true})}</fieldset>`
+      :inputField('details.'+field.key,field.label,field.placeholder,{optional:!field.required,numeric:field.type==='number'})).join('');
+    content.innerHTML=heading('어떤 상황이신가요?','현재 상황을 알려주시면 상담이 더 정확해져요.')+choices('situation',M.situations,{compact:true})+`<div class="detail-fields">${detail}</div>`+(fields.length?`<p class="survey-tip">‘선택’ 항목은 비워두셔도 접수할 수 있어요.<br>정해지지 않은 내용은 상담하면서 결정하세요.</p>`:'');
   }else if(step===3){content.innerHTML=heading('어디에, 언제 필요하세요?','설치 가능 여부와 일정을 확인하는 데 사용해요.')+`<div class="region-fields">${selectField('region','시·도',M.regions,'시·도 선택')}${inputField('district','시·군·구','예: 강남구, 수원시')}</div><p class="field-help">상세 주소는 입력하지 않으셔도 돼요.</p><fieldset><legend>설치 희망 시기</legend>${choices('timing',M.timings,{compact:true})}</fieldset>`;
   }else{
     content.innerHTML=heading('어디로 연락드릴까요?','마지막 단계예요. 선택 내용을 확인하고 접수해 주세요.')+summary()+`<label class="field"><span>이름</span><input name="name" value="${escapeHTML(answers.name)}" autocomplete="name" maxlength="30" placeholder="이름을 입력해 주세요"></label><label class="field"><span>휴대폰 번호</span><input name="phone" type="tel" value="${escapeHTML(answers.phone)}" autocomplete="tel" inputmode="tel" maxlength="15" placeholder="010-0000-0000"></label>`+selectField('contactTime','연락 가능한 시간',M.contactTimes)+`<p class="field-help">희망 시간은 상담 일정에 따라 조율될 수 있어요.</p><div class="form-trap" aria-hidden="true"><label>웹사이트<input name="website" tabindex="-1" autocomplete="off" value=""></label></div><div class="consent-box"><label><input type="checkbox" name="consent" ${answers.consent?'checked':''}><span><b>[필수]</b> 개인정보 수집·이용에 동의합니다.</span></label><details><summary>수집·이용 내용 보기</summary><p>수집·이용 주체: ${escapeHTML(config.privacyOperator)} (${escapeHTML(config.phone)})<br>목적: 요청하신 상품의 상담 연락, 견적 및 설치 조건·혜택 안내<br>항목: 이름, 휴대폰 번호, 연락 희망 시간, 이용 장소, 선택 상품, 설치 지역·시기 및 입력한 상품 정보<br>보유 기간: 접수일로부터 ${config.retentionDays}일 후 삭제<br>동의를 거부하실 수 있으며, 거부 시 온라인 상담 접수가 어렵습니다.</p></details></div><p class="survey-disclaimer">설문 접수만으로 가입이나 사은품 지급이 확정되지 않아요.<br>선택하신 조건에 맞는 혜택을 상담 시 안내해 드립니다.</p>`;
   }
   content.scrollTop=0;requestAnimationFrame(()=>content.querySelector('h2')?.focus({preventScroll:true}));
 }
-function openSurvey(event){event.preventDefault();closeMenu();returnFocus=event.currentTarget;if(complete){complete=false;answers=freshAnswers();step=0;}answers.products=[...selected];if(!answers.products.length&&answers.unknown)answers.products=['아직 잘 모르겠어요'];dialog.showModal();document.body.classList.add('survey-open');render();}
+function openSurvey(event){event.preventDefault();closeMenu();returnFocus=event.currentTarget;if(complete){complete=false;answers=freshAnswers();step=0;}answers.products=[...selected];if(!answers.products.length&&answers.unknown)answers.products=['아직 잘 모르겠어요'];answers.details=M.normalize(answers).details;dialog.showModal();document.body.classList.add('survey-open');render();}
 document.querySelectorAll('[data-consult]').forEach(link=>link.addEventListener('click',openSurvey));
 document.querySelector('.close-dialog').addEventListener('click',()=>{if(!busy)dialog.close();});
 dialog.addEventListener('cancel',event=>{if(busy)event.preventDefault();});
@@ -82,6 +74,7 @@ function capture(event){
     const values=new Set(answers.products);
     if(el.checked){if(el.value==='아직 잘 모르겠어요')values.clear();else values.delete('아직 잘 모르겠어요');values.add(el.value);}else values.delete(el.value);
     answers.products=[...values];answers.unknown=values.has('아직 잘 모르겠어요');selected.clear();answers.products.filter(p=>M.products.includes(p)).forEach(p=>selected.add(p));syncSelection();
+    answers.details=M.normalize(answers).details;
     content.querySelectorAll('[name="products"]').forEach(input=>input.checked=values.has(input.value));
   }else if(el.name.startsWith('details.'))answers.details[el.name.slice(8)]=el.value;
   else answers[el.name]=el.type==='checkbox'?el.checked:el.value;
@@ -102,14 +95,14 @@ form.addEventListener('submit',async event=>{
   }
   if(step<4){step++;render();return;}
   for(let i=0;i<4;i++)if(Object.keys(M.errors(answers,i)).length){step=i;render();showError('선택 내용을 다시 확인해 주세요.');return;}
-  busy=true;next.disabled=true;back.disabled=true;document.querySelector('.close-dialog').disabled=true;next.textContent='접수하고 있어요…';form.setAttribute('aria-busy','true');
+  busy=true;content.inert=true;next.disabled=true;back.disabled=true;document.querySelector('.close-dialog').disabled=true;next.textContent='접수하고 있어요…';form.setAttribute('aria-busy','true');
   try{
     const response=await fetch(config.endpoint||'/api/consultations',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({...M.normalize(answers),requestId:answers.requestId,website:answers.website}),signal:AbortSignal.timeout(25000)});
     const result=await response.json();
     if(!response.ok||!result.ok)throw new Error(result.message||'접수하지 못했어요. 잠시 후 다시 시도해 주세요.');
     receipt=result.receipt;complete=true;selected.clear();syncSelection();answers=freshAnswers();
   }catch(err){showError(err.name==='TimeoutError'?'응답이 늦어지고 있어요. 다시 누르면 중복 없이 접수 여부를 확인합니다.':err instanceof TypeError?'인터넷 연결을 확인한 뒤 다시 접수해 주세요.':err.message);}
-  finally{busy=false;next.disabled=false;back.disabled=false;document.querySelector('.close-dialog').disabled=false;form.removeAttribute('aria-busy');if(complete)render();else next.textContent='맞춤 상담 접수하기';}
+  finally{busy=false;content.inert=false;next.disabled=false;back.disabled=false;document.querySelector('.close-dialog').disabled=false;form.removeAttribute('aria-busy');if(complete)render();else next.textContent='맞춤 상담 접수하기';}
 });
 syncSelection();
 // Instagram links may open the questionnaire directly.

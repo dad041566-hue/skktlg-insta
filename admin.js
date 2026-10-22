@@ -11,8 +11,8 @@ async function load(){
     document.querySelector('#total').textContent=`전체 ${result.total}건`;document.querySelector('#page-label').textContent=`${page+1}페이지`;
     document.querySelector('#prev').disabled=page===0;document.querySelector('#more').disabled=!result.hasMore;
     leads.innerHTML=result.items.length?result.items.map(item=>{
-      const phone=item.phone.replace(/^(\d{3})(\d{3,4})(\d{4})$/,'$1-$2-$3'),d=item.details;
-      const details=[d.carrier&&`통신사: ${d.carrier}`,d.tables&&`테이블오더: ${d.tables}대`,d.rooms&&`TV: ${d.rooms}대`,d.cameras&&`CCTV: ${d.cameras}`,d.business&&`업종: ${d.business}`].filter(Boolean).join(' / ');
+      const phone=item.phone.replace(/^(\d{3})(\d{3,4})(\d{4})$/,'$1-$2-$3');
+      const details=window.SurveyModel.detailEntries(item).map(entry=>`${entry.label}: ${entry.value}`).join(' / ');
       return `<article class="lead" data-id="${esc(item.id)}"><div class="lead-top"><div><h2>${esc(item.name)}</h2><a class="lead-phone" href="tel:${esc(item.phone)}">${esc(phone)}</a></div><span class="status">${esc(item.status)}</span></div><dl>${row('이용 장소',item.place)}${row('필요 상품',item.products.join(' · '))}${row('설치 상황',item.situation)}${row('추가 정보',details)}${row('지역',item.region+' '+item.district)}${row('설치 시기',item.timing)}${row('연락 시간',item.contactTime)}</dl><div class="lead-controls"><select aria-label="${esc(item.name)} 상담 상태">${['신규','연락 완료','상담 완료'].map(s=>`<option ${s===item.status?'selected':''}>${s}</option>`).join('')}</select><button data-action="status">상태 저장</button><button class="delete" data-action="delete">접수 삭제</button></div><p class="lead-meta">${esc(item.receipt)} · ${esc(new Date(item.createdAt).toLocaleString('ko-KR',{timeZone:'Asia/Seoul'}))} 접수</p></article>`;
     }).join(''):'<p class="empty">아직 접수된 상담이 없습니다.</p>';
   }catch(e){if(e.message!=='로그인이 필요합니다.')message.textContent=e.message;}
